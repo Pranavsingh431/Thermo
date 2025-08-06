@@ -116,27 +116,63 @@ class ProductionModelLoader:
     
     def load_yolo_nas_model(self) -> Any:
         """
-        Skip YOLOv8 loading due to training loop issues.
-        Return None to trigger bulletproof pattern detection fallback.
+        Load YOLO-NAS model for component detection.
         
         Returns:
-            None (triggers pattern detection fallback)
+            YOLO-NAS model instance or None if loading fails
         """
         model_name = "yolo_nas_s"
         
-        self.logger.info(f"🤖 Skipping YOLOv8 model loading due to training loop issues")
-        self.logger.info(f"🛡️ Using bulletproof pattern detection instead")
-        
-        self.model_metadata[model_name] = {
-            "loaded_at": datetime.now().isoformat(),
-            "version": "pattern_fallback_v1.0",
-            "status": "fallback",
-            "memory_size_mb": 0,
-            "model_type": "pattern_detection",
-            "note": "Skipped YOLOv8 due to unwanted training loop - using pattern detection"
-        }
-        
-        return None
+        try:
+            self.logger.info(f"🤖 Loading YOLOv8 model for component detection...")
+            
+            from ultralytics import YOLO
+            
+            model = YOLO('yolov8n.pt')
+            
+            if model is None:
+                raise ModelLoadingError("Failed to load YOLOv8 model")
+            
+            self.loaded_models[model_name] = model
+            
+            # Calculate model size
+            model_size_mb = self._estimate_model_size(model)
+            
+            self.model_metadata[model_name] = {
+                "loaded_at": datetime.now().isoformat(),
+                "version": "yolov8n_coco_v1.0",
+                "status": "loaded",
+                "memory_size_mb": model_size_mb,
+                "model_type": "yolov8",
+                "note": "YOLOv8 nano model with COCO pretrained weights"
+            }
+            
+            self.logger.info(f"✅ YOLOv8 model loaded successfully ({model_size_mb:.1f}MB)")
+            return model
+            
+        except ImportError as e:
+            self.logger.error(f"❌ ultralytics not available: {e}")
+            self.model_metadata[model_name] = {
+                "loaded_at": datetime.now().isoformat(),
+                "version": "pattern_fallback_v1.0",
+                "status": "import_error",
+                "memory_size_mb": 0,
+                "model_type": "pattern_detection",
+                "error": f"ultralytics import failed: {e}"
+            }
+            return None
+            
+        except Exception as e:
+            self.logger.error(f"❌ YOLOv8 model loading failed: {e}")
+            self.model_metadata[model_name] = {
+                "loaded_at": datetime.now().isoformat(),
+                "version": "pattern_fallback_v1.0",
+                "status": "load_error",
+                "memory_size_mb": 0,
+                "model_type": "pattern_detection",
+                "error": str(e)
+            }
+            return None
     
     def get_model_status(self) -> Dict[str, Any]:
         """
@@ -256,4 +292,4 @@ class ProductionModelLoader:
             return True
 
 # Global model loader instance
-model_loader = ProductionModelLoader()                          
+model_loader = ProductionModelLoader()                                                                                                        

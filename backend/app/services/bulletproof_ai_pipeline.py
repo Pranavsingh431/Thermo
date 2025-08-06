@@ -351,7 +351,7 @@ class BulletproofAIPipeline:
                 raise ValueError(f"Could not load image: {image_path}")
             
             # Run YOLOv8 inference
-            results = self.yolo_model(image)
+            results = self.yolo_model(image, conf=0.3, verbose=False)
             
             # Process YOLOv8 results and map to transmission line components
             detections = []
@@ -368,16 +368,20 @@ class BulletproofAIPipeline:
                     84: "polymer_insulator"  # book -> insulator (elongated objects)
                 }
                 
-                if result.boxes is not None:
-                    for box in result.boxes:
-                        class_id = int(box.cls[0])
-                        confidence = float(box.conf[0])
+                # Extract detections from YOLOv8 results
+                if result.boxes is not None and len(result.boxes) > 0:
+                    boxes = result.boxes
+                    
+                    for i in range(len(boxes)):
+                        box = boxes.xyxy[i].cpu().numpy()  # x1, y1, x2, y2
+                        conf = float(boxes.conf[i].cpu().numpy())
+                        cls = int(boxes.cls[i].cpu().numpy())
                         
-                        # Only process if confidence is high enough
-                        if confidence > 0.3 and class_id in coco_to_component:
-                            component_type = coco_to_component[class_id]
+                        # Only process if confidence is high enough and class is mapped
+                        if conf > 0.3 and cls in coco_to_component:
+                            component_type = coco_to_component[cls]
                             
-                            x1, y1, x2, y2 = map(int, box.xyxy[0])
+                            x1, y1, x2, y2 = map(int, box)
                             w, h = x2 - x1, y2 - y1
                             
                             # Extract temperature info for this detection
@@ -387,7 +391,7 @@ class BulletproofAIPipeline:
                             
                             detection = {
                                 "component_type": component_type,
-                                "confidence": round(confidence, 3),
+                                "confidence": round(conf, 3),
                                 "bbox": [x1, y1, w, h],
                                 "center": (x1 + w//2, y1 + h//2),
                                 "max_temperature": temp_stats["max_temp"],
@@ -642,4 +646,4 @@ class BulletproofAIPipeline:
         }
 
 # Global bulletproof pipeline instance
-bulletproof_ai_pipeline = BulletproofAIPipeline()  
+bulletproof_ai_pipeline = BulletproofAIPipeline()        
