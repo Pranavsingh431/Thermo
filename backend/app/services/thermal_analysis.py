@@ -320,16 +320,25 @@ async def process_single_thermal_image_full_ai(scan: ThermalScan, db: Session, a
         # Create detection records for individual components/detections
         if FULL_AI_AVAILABLE and components:
             for component_data in components:
+                bbox = component_data.get('bbox', [0, 0, 0, 0])
+                temp_reading = component_data.get('region_max_temp', scan.ambient_temperature or 34.0)
                 detection = Detection(
                     ai_analysis_id=ai_analysis.id,
                     component_type=component_data.get('component_type', 'unknown'),
                     confidence=component_data.get('confidence', 0.0),
-                    bbox_x=component_data.get('bbox', [0, 0, 0, 0])[0],
-                    bbox_y=component_data.get('bbox', [0, 0, 0, 0])[1],
-                    bbox_width=component_data.get('bbox', [0, 0, 0, 0])[2],
-                    bbox_height=component_data.get('bbox', [0, 0, 0, 0])[3] if len(component_data.get('bbox', [0, 0, 0, 0])) > 3 else component_data.get('bbox', [0, 0, 0, 0])[2],
-                    temperature_reading=component_data.get('region_max_temp', scan.ambient_temperature or 34.0),
-                    hotspot_classification=component_data.get('defect_type', 'normal')
+                    bbox_x=bbox[0] / 100.0 if bbox[0] > 1 else bbox[0],  # Normalize to 0-1
+                    bbox_y=bbox[1] / 100.0 if bbox[1] > 1 else bbox[1],
+                    bbox_width=bbox[2] / 100.0 if bbox[2] > 1 else bbox[2],
+                    bbox_height=bbox[3] / 100.0 if len(bbox) > 3 and bbox[3] > 1 else (bbox[3] / 100.0 if len(bbox) > 3 else bbox[2] / 100.0),
+                    center_x=(bbox[0] + bbox[2]/2) / 100.0 if bbox[0] > 1 else (bbox[0] + bbox[2]/2),
+                    center_y=(bbox[1] + bbox[3]/2) / 100.0 if bbox[1] > 1 else (bbox[1] + bbox[3]/2),
+                    max_temperature=temp_reading,
+                    avg_temperature=temp_reading - 2.0,  # Estimate avg as slightly lower
+                    min_temperature=temp_reading - 5.0,  # Estimate min as lower
+                    hotspot_classification=component_data.get('defect_type', 'normal'),
+                    temperature_above_ambient=(temp_reading - (scan.ambient_temperature or 34.0)),
+                    risk_level='critical' if temp_reading > 74.0 else ('medium' if temp_reading > 54.0 else 'low'),
+                    area_pixels=int(bbox[2] * bbox[3]) if len(bbox) > 3 else int(bbox[2] * bbox[2])
                 )
                 db.add(detection)
         else:
@@ -389,4 +398,4 @@ async def process_single_thermal_image_full_ai(scan: ThermalScan, db: Session, a
         db.commit()
         db.refresh(ai_analysis)
         
-        return ai_analysis 
+        return ai_analysis  
