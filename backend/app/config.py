@@ -28,8 +28,8 @@ class Settings(BaseSettings):
     # Email Configuration (for Gmail notifications)
     SMTP_SERVER: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
-    SMTP_USERNAME: str = ""  # Will be set via env var
-    SMTP_PASSWORD: str = ""  # Will be set via env var
+    SMTP_USERNAME: str = "singhpranav431@gmail.com"  # User's Gmail
+    SMTP_PASSWORD: str = ""  # Will be set via env var - use app password
     
     # Notification settings
     CHIEF_ENGINEER_EMAIL: str = "tata.power.chief@example.com"  # Replace with actual email
@@ -49,4 +49,4 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
-settings = Settings() 
+settings = Settings()  

@@ -21,7 +21,7 @@ from PIL import Image
 # Import our production AI components
 from app.utils.flir_thermal_extractor import flir_extractor
 from app.services.production_ai_detector import production_ai_detector
-from app.services.production_defect_classifier import production_defect_classifier
+from app.services.defect_classifier import tata_power_defect_classifier
 
 # Try to import ML dependencies (graceful fallback)
 try:
@@ -150,10 +150,15 @@ class EnhancedThermalAnalyzer:
             
             # Step 2b: Defect classification for detected components
             defect_start = time.time()
-            defect_analyses = production_defect_classifier.classify_defects(
-                image_path=image_path,
-                component_detections=detections,
-                temperature_map=temperature_map,
+            defect_analyses = tata_power_defect_classifier.classify_component_defects(
+                detections=[{
+                    'component_type': d.component_type,
+                    'max_temperature': d.max_temperature,
+                    'confidence': d.confidence,
+                    'bbox': d.bbox,
+                    'center': d.center,
+                    'area_pixels': d.area_pixels
+                } for d in detections],
                 ambient_temp=ambient_temp or 25.0
             )
             defect_time = time.time() - defect_start
@@ -305,10 +310,10 @@ class EnhancedThermalAnalyzer:
                     'max_temperature': detection.max_temperature,
                     'avg_temperature': detection.avg_temperature,
                     'min_temperature': detection.min_temperature,
-                    'defect_type': defect_info.defect_category if defect_info else 'normal',
-                    'defect_severity': defect_info.severity if defect_info else 'normal',
-                    'defect_confidence': defect_info.confidence if defect_info else 0.0,
-                    'risk_score': defect_info.risk_score if defect_info else 5,
+                    'defect_type': defect_info.thermal_severity if defect_info else 'normal',
+                    'defect_severity': defect_info.risk_level if defect_info else 'low',
+                    'defect_confidence': defect_info.confidence_score if defect_info else 0.0,
+                    'risk_score': defect_info.inspection_priority if defect_info else 4,
                     'immediate_action_required': defect_info.immediate_action_required if defect_info else False,
                     'area_pixels': detection.area_pixels
                 }
@@ -499,4 +504,4 @@ def create_enhanced_thermal_analyzer():
     return EnhancedThermalAnalyzer()
 
 # Global enhanced analyzer instance
-enhanced_thermal_analyzer = create_enhanced_thermal_analyzer() 
+enhanced_thermal_analyzer = create_enhanced_thermal_analyzer()  
