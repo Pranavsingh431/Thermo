@@ -1,0 +1,130 @@
+# Thermal Inspection System - Git Ignore
+# =====================================
+
+# Dependencies
+node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+thermal_inspection.db
+
+# Logs and debugging
+logs/
+*.log
+crash.log
+debug.log
+error.log
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+
+# Large data files and sensitive content
+Salsette camp/
+*.pdf
+models/*.pth
+models/*.pt
+models/*.onnx
+
+# Processed files and uploads
+static/processed_images/
+static/thermal_images/
+static/reports/
+uploads/
+
+# AI model cache
+.cache/
+torch/
+transformers/
+
+# Package installers
+*.pkg
+*.dmg
+*.exe
+*.msi
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Docker
+.dockerignore
+
+# Configuration secrets
+config/secrets.py
+app/secrets.py
+secrets/
+
+# Personal notes and documentation
+TODO.md
+NOTES.md
+cursor_generate_a_name_for_the_chat.md
+
+# Test data
+test_data/
+sample_images/ 

@@ -1,0 +1,80 @@
+# Production Requirements for Tata Power Thermal Eye System
+# ==========================================================
+# 
+# This file contains ALL dependencies required for production deployment.
+# These have been tested and verified for the bulletproof production system.
+
+# Core Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+
+# Database
+sqlalchemy==2.0.23
+alembic==1.12.1
+psycopg2-binary==2.9.9  # PostgreSQL (production)
+
+# Authentication & Security
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.6
+
+# File Processing & Validation
+Pillow==10.1.0
+python-magic==0.4.27      # CRITICAL: File type validation
+python-magic-bin==0.4.14  # Binary for Windows/macOS
+
+# AI/ML Dependencies
+torch==2.1.1
+torchvision==0.16.1
+super-gradients==3.5.0    # YOLO-NAS
+opencv-python==4.8.1.78
+numpy==1.24.3
+
+# Image Processing
+exifread==3.0.0           # FLIR EXIF extraction
+Pillow==10.1.0
+
+# HTTP Client (for simulation script)
+aiohttp==3.9.1
+aiofiles==23.2.0
+watchdog==3.0.0           # File system monitoring
+
+# System Monitoring
+psutil==5.9.6              # System resource monitoring
+
+# Development & Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+locust==2.17.0             # Load testing
+
+# Production Monitoring
+prometheus-client==0.19.0   # Metrics collection
+
+# Logging & Error Tracking
+structlog==23.2.0          # Structured logging
+
+# Data Validation
+pydantic==2.5.0
+
+# Configuration
+python-dotenv==1.0.0
+
+# Email (for reports)
+aiosmtplib==3.0.1
+
+# PDF Generation (for reports)  
+reportlab==4.0.7
+
+# Async Support
+asyncio-mqtt==0.16.1       # Future: MQTT integration
+
+# Production Server
+gunicorn==21.2.0           # Production WSGI server
+
+# Memory Management
+memory-profiler==0.61.0    # Memory monitoring
+
+# Production Utilities
+rich==13.7.0               # Better console output
+click==8.1.7               # CLI utilities 

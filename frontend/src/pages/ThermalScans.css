@@ -1,0 +1,51 @@
+.thermal-scans-page {
+  padding: 24px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #1f1f1f;
+}
+
+.page-header p {
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.scan-details h3 {
+  color: #1890ff;
+  margin-bottom: 16px;
+}
+
+.scan-details p {
+  margin-bottom: 8px;
+}
+
+.ant-table-tbody > tr:hover > td {
+  background-color: #f5f5f5;
+}
+
+.ant-tag {
+  font-weight: 500;
+}
+
+.ant-progress-small {
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .thermal-scans-page {
+    padding: 16px;
+  }
+  
+  .page-header h1 {
+    font-size: 24px;
+  }
+} 

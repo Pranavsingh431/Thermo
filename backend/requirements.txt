@@ -1,0 +1,60 @@
+# Core FastAPI dependencies
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Database
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+alembic==1.13.1
+
+# Redis and Celery (Fixed version conflict)
+redis==4.6.0
+celery[redis]==5.3.4
+flower==2.0.1
+
+# Authentication
+python-jose[cryptography]==3.3.0
+python-multipart==0.0.6
+passlib[bcrypt]==1.7.4
+
+# AI/ML Dependencies
+torch==2.1.1
+torchvision==0.16.1
+super-gradients==3.5.0
+opencv-python==4.8.1.78
+Pillow==10.1.0
+numpy==1.25.2
+
+# Image Processing
+opencv-contrib-python==4.8.1.78
+scikit-image==0.22.0
+
+# HTTP Client
+httpx==0.25.2
+aiofiles==23.2.0
+
+# Utilities
+python-dateutil==2.8.2
+pytz==2023.3
+email-validator==2.1.0
+geopy==2.4.1
+
+# Development and Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+black==23.11.0
+isort==5.12.0
+flake8==6.1.0
+
+# Monitoring and Logging
+prometheus-client==0.19.0
+python-json-logger==2.0.7
+
+# File handling
+watchdog==3.0.0
+
+# Production
+gunicorn==21.2.0 

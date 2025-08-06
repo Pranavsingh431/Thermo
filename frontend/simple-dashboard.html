@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thermal Inspection System - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 300;
+        }
+
+        .header .subtitle {
+            opacity: 0.9;
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .auth-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .auth-section.hidden {
+            display: none;
+        }
+
+        .login-form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 5px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.visible {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .card h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+
+        .upload-section {
+            border: 2px dashed #ddd;
+            padding: 2rem;
+            text-align: center;
+            border-radius: 10px;
+            transition: border-color 0.3s;
+        }
+
+        .upload-section:hover {
+            border-color: #667eea;
+        }
+
+        .upload-section.dragover {
+            border-color: #667eea;
+            background-color: #f8f9ff;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-btn {
+            display: inline-block;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .alert {
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+
+        .alert.success {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .alert.error {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .alert.info {
+            background-color: #d1ecf1;
+            border-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .user-info {
+            float: right;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 1rem;
+        }
+
+        .substations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .substation-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .batch-status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-completed { background: #d4edda; color: #28a745; }
+        .status-processing { background: #fff3cd; color: #856404; }
+        .status-pending { background: #d1ecf1; color: #0c5460; }
+        .status-failed { background: #f8d7da; color: #721c24; }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 0.5rem;
+            }
+            .header {
+                padding: 1rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔥 Thermal Inspection System</h1>
+        <div class="subtitle">AI-powered thermal analysis for transmission lines</div>
+        <div class="user-info" id="userInfo" style="display: none;">
+            <span id="userName"></span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Authentication Section -->
+        <div class="auth-section" id="authSection">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Login to Thermal Inspection System</h2>
+            <form class="login-form" onsubmit="login(event)">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" value="engineer" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" value="engineer123" required>
+                </div>
+                <div class="form-group" style="text-align: center;">
+                    <button type="submit" class="btn" id="loginBtn">Login</button>
+                </div>
+            </form>
+            <div id="loginMessage"></div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="dashboard" id="dashboard">
+            <!-- Statistics Cards -->
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="icon">📸</div>
+                    <div class="value" id="totalImages">-</div>
+                    <div class="label">Total Images</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">🔥</div>
+                    <div class="value" id="criticalIssues">-</div>
+                    <div class="label">Critical Issues</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">🏭</div>
+                    <div class="value" id="totalSubstations">-</div>
+                    <div class="label">Substations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon">⚡</div>
+                    <div class="value" id="activeBatches">-</div>
+                    <div class="label">Active Batches</div>
+                </div>
+            </div>
+
+            <!-- File Upload Section -->
+            <div class="card">
+                <h3>🚀 Upload Thermal Images</h3>
+                <div class="upload-section" id="uploadSection" 
+                     ondrop="dropHandler(event)" 
+                     ondragover="dragOverHandler(event)"
+                     ondragleave="dragLeaveHandler(event)">
+                    <div>
+                        <h4>Drag & Drop FLIR Images Here</h4>
+                        <p>or</p>
+                        <button type="button" class="btn upload-btn" onclick="document.getElementById('fileInput').click()">
+                            Choose Files
+                        </button>
+                        <input type="file" id="fileInput" class="file-input" multiple accept=".jpg,.jpeg,.png,.tiff,.bmp" onchange="handleFiles(this.files)">
+                        <p><small>Supports: JPG, PNG, TIFF, BMP (Max 50MB per file, up to 5000 files)</small></p>
+                    </div>
+                </div>
+                <div id="uploadProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div id="uploadStatus"></div>
+                </div>
+            </div>
+
+            <!-- Recent Analyses -->
+            <div class="card">
+                <h3>🔍 Recent Analyses</h3>
+                <div id="recentAnalyses">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading recent analyses...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Substations Overview -->
+            <div class="card">
+                <h3>🏭 Substations Overview</h3>
+                <div id="substationsOverview">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <div>Loading substations...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE = 'http://127.0.0.1:8000/api';
+        let authToken = localStorage.getItem('authToken');
+        let currentBatchId = null;
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            if (authToken) {
+                verifyToken();
+            }
+        });
+
+        // Authentication functions
+        async function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const messageDiv = document.getElementById('loginMessage');
+
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            messageDiv.innerHTML = '';
+
+            try {
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authToken = data.access_token;
+                    localStorage.setItem('authToken', authToken);
+                    messageDiv.innerHTML = '<div class="alert success">Login successful!</div>';
+                    setTimeout(() => {
+                        document.getElementById('authSection').classList.add('hidden');
+                        document.getElementById('dashboard').classList.add('visible');
+                        loadUserInfo();
+                        loadDashboard();
+                    }, 1000);
+                } else {
+                    messageDiv.innerHTML = `<div class="alert error">Login failed: ${data.detail}</div>`;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = `<div class="alert error">Network error: ${error.message}</div>`;
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        }
+
+        async function verifyToken() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    document.getElementById('authSection').classList.add('hidden');
+                    document.getElementById('dashboard').classList.add('visible');
+                    loadUserInfo();
+                    loadDashboard();
+                } else {
+                    logout();
+                }
+            } catch (error) {
+                logout();
+            }
+        }
+
+        async function loadUserInfo() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('userName').textContent = `${user.full_name} (${user.role})`;
+                    document.getElementById('userInfo').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to load user info:', error);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('authToken');
+            authToken = null;
+            document.getElementById('authSection').classList.remove('hidden');
+            document.getElementById('dashboard').classList.remove('visible');
+            document.getElementById('userInfo').style.display = 'none';
+        }
+
+        // Dashboard functions
+        async function loadDashboard() {
+            await Promise.all([
+                loadStats(),
+                loadRecentAnalyses(),
+                loadSubstations()
+            ]);
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch(`${API_BASE}/dashboard/stats`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('totalImages').textContent = stats.total_images_processed;
+                    document.getElementById('criticalIssues').textContent = stats.critical_issues;
+                    document.getElementById('totalSubstations').textContent = stats.total_substations;
+                    document.getElementById('activeBatches').textContent = stats.active_batches;
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+
+        async function loadRecentAnalyses() {
+            try {
+                const response = await fetch(`${API_BASE}/dashboard/recent-analyses?limit=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const container = document.getElementById('recentAnalyses');
+
+                if (response.ok) {
+                    const analyses = await response.json();
+                    
+                    if (analyses.length === 0) {
+                        container.innerHTML = '<p>No analyses yet. Upload some thermal images to get started!</p>';
+                    } else {
+                        container.innerHTML = analyses.map(analysis => `
+                            <div style="padding: 1rem; border-bottom: 1px solid #eee;">
+                                <strong>${analysis.filename}</strong>
+                                <div style="margin-top: 0.5rem; font-size: 0.9rem; color: #666;">
+                                    Risk: <span class="batch-status status-${analysis.risk_level}">${analysis.risk_level}</span>
+                                    | Critical: ${analysis.critical_hotspots}
+                                    | Quality: ${(analysis.quality_score * 100).toFixed(1)}%
+                                    | Substation: ${analysis.substation_name || 'Unknown'}
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    container.innerHTML = '<div class="alert error">Failed to load recent analyses</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load recent analyses:', error);
+                document.getElementById('recentAnalyses').innerHTML = 
+                    '<div class="alert error">Network error loading analyses</div>';
+            }
+        }
+
+        async function loadSubstations() {
+            try {
+                const response = await fetch(`${API_BASE}/dashboard/substations`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const container = document.getElementById('substationsOverview');
+
+                if (response.ok) {
+                    const substations = await response.json();
+                    
+                    if (substations.length === 0) {
+                        container.innerHTML = '<p>No substations configured.</p>';
+                    } else {
+                        container.innerHTML = `
+                            <div class="substations-grid">
+                                ${substations.map(sub => `
+                                    <div class="substation-card">
+                                        <h4>${sub.name}</h4>
+                                        <p><strong>Code:</strong> ${sub.code}</p>
+                                        <p><strong>Total Scans:</strong> ${sub.total_scans}</p>
+                                        <p><strong>Critical Issues:</strong> ${sub.critical_count}</p>
+                                        <p><strong>Potential Issues:</strong> ${sub.potential_count}</p>
+                                        ${sub.avg_quality_score ? `<p><strong>Avg Quality:</strong> ${(sub.avg_quality_score * 100).toFixed(1)}%</p>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                } else {
+                    container.innerHTML = '<div class="alert error">Failed to load substations</div>';
+                }
+            } catch (error) {
+                console.error('Failed to load substations:', error);
+                document.getElementById('substationsOverview').innerHTML = 
+                    '<div class="alert error">Network error loading substations</div>';
+            }
+        }
+
+        // File upload functions
+        function dropHandler(ev) {
+            ev.preventDefault();
+            document.getElementById('uploadSection').classList.remove('dragover');
+            handleFiles(ev.dataTransfer.files);
+        }
+
+        function dragOverHandler(ev) {
+            ev.preventDefault();
+            document.getElementById('uploadSection').classList.add('dragover');
+        }
+
+        function dragLeaveHandler(ev) {
+            ev.preventDefault();
+            document.getElementById('uploadSection').classList.remove('dragover');
+        }
+
+        async function handleFiles(files) {
+            if (files.length === 0) return;
+
+            if (files.length > 5000) {
+                showAlert('error', 'Maximum 5000 files allowed per batch');
+                return;
+            }
+
+            const formData = new FormData();
+            
+            // Add files
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            
+            // Add metadata
+            formData.append('ambient_temperature', '34.0');
+            formData.append('notes', 'Web dashboard upload');
+
+            const progressDiv = document.getElementById('uploadProgress');
+            const statusDiv = document.getElementById('uploadStatus');
+            const progressFill = document.getElementById('progressFill');
+
+            progressDiv.style.display = 'block';
+            statusDiv.innerHTML = `Uploading ${files.length} files...`;
+            progressFill.style.width = '10%';
+
+            try {
+                const response = await fetch(`${API_BASE}/upload/thermal-images`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+
+                progressFill.style.width = '70%';
+
+                if (response.ok) {
+                    const result = await response.json();
+                    currentBatchId = result.batch_id;
+                    
+                    progressFill.style.width = '100%';
+                    statusDiv.innerHTML = `
+                        <div class="alert success">
+                            Upload successful! Batch ID: ${result.batch_id}<br>
+                            Successful: ${result.successful_uploads}, Failed: ${result.failed_uploads}
+                        </div>
+                    `;
+
+                    // Monitor batch processing
+                    monitorBatch(result.batch_id);
+                    
+                    // Refresh dashboard
+                    setTimeout(() => {
+                        loadDashboard();
+                    }, 2000);
+
+                } else {
+                    const error = await response.json();
+                    statusDiv.innerHTML = `<div class="alert error">Upload failed: ${error.detail}</div>`;
+                    progressFill.style.width = '0%';
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="alert error">Network error: ${error.message}</div>`;
+                progressFill.style.width = '0%';
+            }
+        }
+
+        async function monitorBatch(batchId) {
+            const statusDiv = document.getElementById('uploadStatus');
+            let attempts = 0;
+            const maxAttempts = 20;
+
+            const checkStatus = async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/upload/batch/${batchId}/status`, {
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+
+                    if (response.ok) {
+                        const status = await response.json();
+                        
+                        const statusHtml = `
+                            <div class="alert info">
+                                <strong>Batch Processing Status:</strong> ${status.status}<br>
+                                Total: ${status.total_images}, 
+                                Processed: ${status.processed_images}, 
+                                Failed: ${status.failed_images}
+                                ${status.processing_duration ? `<br>Duration: ${status.processing_duration}` : ''}
+                            </div>
+                        `;
+                        
+                        statusDiv.innerHTML = statusHtml;
+
+                        if (status.status === 'completed' || status.status === 'failed') {
+                            loadDashboard(); // Refresh dashboard with new data
+                            return;
+                        }
+
+                        attempts++;
+                        if (attempts < maxAttempts) {
+                            setTimeout(checkStatus, 3000); // Check again in 3 seconds
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking batch status:', error);
+                }
+            };
+
+            // Start monitoring
+            setTimeout(checkStatus, 2000);
+        }
+
+        function showAlert(type, message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type}`;
+            alertDiv.textContent = message;
+            
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.container').firstChild);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        // Auto-refresh dashboard every 30 seconds
+        setInterval(() => {
+            if (authToken && document.getElementById('dashboard').classList.contains('visible')) {
+                loadStats();
+            }
+        }, 30000);
+    </script>
+</body>
+</html> 
