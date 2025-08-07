@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from pydantic import BaseModel
 import logging
+from datetime import datetime
 
 from app.database import get_db
 from app.models.user import User
@@ -140,7 +141,7 @@ async def upload_thermal_images(
                 longitude=metadata.get('longitude'),
                 altitude=metadata.get('altitude'),
                 gps_timestamp=metadata.get('gps_timestamp'),
-                capture_timestamp=metadata.get('capture_timestamp') or file.filename, # Fallback
+                capture_timestamp=metadata.get('capture_timestamp') or datetime.now(),
                 ambient_temperature=ambient_temperature,
                 camera_settings=metadata.get('camera_settings'),
                 batch_id=batch_id,
@@ -324,4 +325,4 @@ async def delete_batch(
 @router.get("/health")
 async def health_check():
     """Health check endpoint"""
-    return {"status": "healthy", "service": "upload"} 
+    return {"status": "healthy", "service": "upload"}    

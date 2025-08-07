@@ -22,12 +22,11 @@ python-multipart==0.0.6
 # File Processing & Validation
 Pillow==10.1.0
 python-magic==0.4.27      # CRITICAL: File type validation
-python-magic-bin==0.4.14  # Binary for Windows/macOS
 
 # AI/ML Dependencies
 torch==2.1.1
 torchvision==0.16.1
-super-gradients==3.5.0    # YOLO-NAS
+ultralytics==8.0.196      # YOLOv8 (replaces super-gradients)
 opencv-python==4.8.1.78
 numpy==1.24.3
 
@@ -77,4 +76,4 @@ memory-profiler==0.61.0    # Memory monitoring
 
 # Production Utilities
 rich==13.7.0               # Better console output
-click==8.1.7               # CLI utilities 
+click==8.1.7               # CLI utilities  

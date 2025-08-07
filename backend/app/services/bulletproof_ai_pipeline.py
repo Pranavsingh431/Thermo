@@ -339,11 +339,10 @@ class BulletproofAIPipeline:
             }
     
     def _yolo_nas_detection(self, image_path: str, thermal_data: Dict) -> Dict:
-        """YOLO-NAS component detection implementation"""
+        """YOLOv8 component detection implementation"""
         
         try:
             import cv2
-            import torch
             import numpy as np
             
             # Load image
@@ -351,65 +350,58 @@ class BulletproofAIPipeline:
             if image is None:
                 raise ValueError(f"Could not load image: {image_path}")
             
-            # Prepare image for YOLO-NAS
-            # Convert BGR to RGB
-            image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            # Run YOLOv8 inference
+            results = self.yolo_model(image, conf=0.3, verbose=False)
             
-            # Run YOLO-NAS inference
-            with torch.no_grad():
-                predictions = self.yolo_model.predict(image_rgb)
-            
-            # Process YOLO-NAS results and map to transmission line components
+            # Process YOLOv8 results and map to transmission line components
             detections = []
             component_counts = {"nuts_bolts": 0, "mid_span_joint": 0, "polymer_insulator": 0, "conductor": 0}
             
-            if predictions and len(predictions) > 0:
-                prediction = predictions[0]  # Get first prediction
+            if results and len(results) > 0:
+                result = results[0]
                 
-                # Extract bounding boxes, confidences, and class IDs
-                if hasattr(prediction, 'prediction'):
-                    pred_data = prediction.prediction
+                # Map COCO classes to transmission line components
+                coco_to_component = {
+                    64: "conductor",  # potted plant -> conductor (linear objects)
+                    73: "nuts_bolts",  # bottle -> nuts/bolts (small circular objects)
+                    77: "mid_span_joint",  # cell phone -> joints (rectangular objects)
+                    84: "polymer_insulator"  # book -> insulator (elongated objects)
+                }
+                
+                # Extract detections from YOLOv8 results
+                if result.boxes is not None and len(result.boxes) > 0:
+                    boxes = result.boxes
                     
-                    # Map COCO classes to transmission line components
-                    coco_to_component = {
-                        # These are reasonable mappings from COCO to electrical components
-                        64: "conductor",  # potted plant -> conductor (linear objects)
-                        73: "nuts_bolts",  # bottle -> nuts/bolts (small circular objects)
-                        77: "mid_span_joint",  # cell phone -> joints (rectangular objects)
-                        84: "polymer_insulator"  # book -> insulator (elongated objects)
-                    }
-                    
-                    if hasattr(pred_data, 'bboxes_xyxy') and len(pred_data.bboxes_xyxy) > 0:
-                        for i, bbox in enumerate(pred_data.bboxes_xyxy):
-                            if i < len(pred_data.labels) and i < len(pred_data.confidence):
-                                class_id = int(pred_data.labels[i])
-                                confidence = float(pred_data.confidence[i])
-                                
-                                # Only process if confidence is high enough
-                                if confidence > 0.3 and class_id in coco_to_component:
-                                    component_type = coco_to_component[class_id]
-                                    
-                                    x1, y1, x2, y2 = map(int, bbox[:4])
-                                    w, h = x2 - x1, y2 - y1
-                                    
-                                    # Extract temperature info for this detection
-                                    temp_stats = self._extract_detection_temperature(
-                                        x1, y1, w, h, thermal_data
-                                    )
-                                    
-                                    detection = {
-                                        "component_type": component_type,
-                                        "confidence": round(confidence, 3),
-                                        "bbox": [x1, y1, w, h],
-                                        "center": (x1 + w//2, y1 + h//2),
-                                        "max_temperature": temp_stats["max_temp"],
-                                        "avg_temperature": temp_stats["avg_temp"],
-                                        "min_temperature": temp_stats["min_temp"],
-                                        "area_pixels": w * h
-                                    }
-                                    
-                                    detections.append(detection)
-                                    component_counts[component_type] += 1
+                    for i in range(len(boxes)):
+                        box = boxes.xyxy[i].cpu().numpy()  # x1, y1, x2, y2
+                        conf = float(boxes.conf[i].cpu().numpy())
+                        cls = int(boxes.cls[i].cpu().numpy())
+                        
+                        # Only process if confidence is high enough and class is mapped
+                        if conf > 0.3 and cls in coco_to_component:
+                            component_type = coco_to_component[cls]
+                            
+                            x1, y1, x2, y2 = map(int, box)
+                            w, h = x2 - x1, y2 - y1
+                            
+                            # Extract temperature info for this detection
+                            temp_stats = self._extract_detection_temperature(
+                                x1, y1, w, h, thermal_data
+                            )
+                            
+                            detection = {
+                                "component_type": component_type,
+                                "confidence": round(conf, 3),
+                                "bbox": [x1, y1, w, h],
+                                "center": (x1 + w//2, y1 + h//2),
+                                "max_temperature": temp_stats["max_temp"],
+                                "avg_temperature": temp_stats["avg_temp"],
+                                "min_temperature": temp_stats["min_temp"],
+                                "area_pixels": w * h
+                            }
+                            
+                            detections.append(detection)
+                            component_counts[component_type] += 1
             
             return {
                 "total_components": len(detections),
@@ -419,7 +411,7 @@ class BulletproofAIPipeline:
             
         except Exception as e:
             # Re-raise to trigger failsafe
-            raise RuntimeError(f"YOLO-NAS inference failed: {e}")
+            raise RuntimeError(f"YOLOv8 inference failed: {e}")
     
     def _pattern_based_detection(self, image_path: str, thermal_data: Dict) -> Dict:
         """Pattern-based component detection (failsafe implementation)"""
@@ -654,4 +646,4 @@ class BulletproofAIPipeline:
         }
 
 # Global bulletproof pipeline instance
-bulletproof_ai_pipeline = BulletproofAIPipeline() 
+bulletproof_ai_pipeline = BulletproofAIPipeline()        
