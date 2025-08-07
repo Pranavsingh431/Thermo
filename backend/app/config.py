@@ -32,7 +32,7 @@ class Settings(BaseSettings):
     SMTP_PASSWORD: str = ""  # Will be set via env var - use app password
     
     # Notification settings
-    CHIEF_ENGINEER_EMAIL: str = "tata.power.chief@example.com"  # Replace with actual email
+    CHIEF_ENGINEER_EMAIL: str = "singhpranav431@gmail.com"  # Using user's email for testing
     
     # Logging
     LOG_LEVEL: str = "INFO"
@@ -49,4 +49,4 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
 
-settings = Settings()  
+settings = Settings()    
